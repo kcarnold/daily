@@ -106,12 +106,12 @@ daily2cal <-
     start = NULL,
     end   = NULL,
     days  = NULL,
-    delim = "::\\s+",
+    delim = "::\\s*",
     daysep = "^===+"
   )
   {
     current_date  <- NA
-    Cal <- data.frame(date = NA) # , Topic = NA, note = NA)
+    Cal <- data.frame(date = NA)
 
     opt <- rmarkdown::yaml_front_matter(path)
 
@@ -132,6 +132,7 @@ daily2cal <-
     lines <- getSrcLines(srcfile(path), 1, 10000)
     state = 0
     current_row <- data.frame(date = current_date)
+    label <- "Note"
     done_with_cal <- FALSE
     skip_day <- FALSE
     for (line in lines) {
@@ -174,26 +175,23 @@ daily2cal <-
           skip_day <- TRUE
         }
 
-      }  # end if ^===
-      # item to place on calendar of form label:: value
-      if (grepl("^\\s*[^\\s]+:: ", line)) {
+      } else { # end if ^===
+        # item to place on calendar of form label:: value
         parts <- stringr::str_split(line, pattern = delim, n = 2)[[1]]
-        label <- gsub("\\s", "", parts[1]); value <- parts[2]
-        # check for and process URLs
-        parts <- stringr::str_split(value, pattern = "@@", n = 2)[[1]]
-        if (length(parts) > 1) {
-          value <-
-            glue::glue('<a href="{url}">{val}</a>',
-                       url = parts[2], val = parts[1])
+        if (length(parts) == 2) {
+          # New label.
+          label <- stringr::str_trim(parts[1], side = "right")
+          line <- stringr::str_trim(parts[2], side = "left")
         } else {
-          value <- parts[1]
+          # Continue previous line
+          line <- parts[1]
         }
 
         if (!is.null(current_row[1, label])) {
           current_row[1, label] <-
-            paste0(current_row[1, label], "<br>", value)
+            paste0(current_row[1, label], "\n", line)
         } else {
-          current_row[1, label] <- value
+          current_row[1, label] <- line
         }
       }
     }  # end for line
