@@ -201,7 +201,7 @@ daily2cal <-
 
   start <- lubridate::floor_date(start, unit = "week")
   suppressMessages(
-    Cal %>%
+    result <- Cal %>%
       right_join(
         data.frame(
           date = start +
@@ -215,7 +215,11 @@ daily2cal <-
     # day   = lubridate::wday(date),
     # wday  = lubridate::wday(date, label = TRUE))
   )
+  if (!is.na(end)) {
+    result <- filter(result, date <= end)
   }
+  result
+}
 
 next_cal_day <- function(date, mask = 1:5) {
   wd <- lubridate::wday(date)
