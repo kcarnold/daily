@@ -176,22 +176,29 @@ daily2cal <-
         }
 
       } else { # end if ^===
+        keep_line <- TRUE
         # item to place on calendar of form label:: value
         parts <- stringr::str_split(line, pattern = delim, n = 2)[[1]]
         if (length(parts) == 2) {
           # New label.
           label <- stringr::str_trim(parts[1], side = "right")
           line <- stringr::str_trim(parts[2], side = "left")
+        } else if (stringr::str_starts(parts[1], "  ")) {
+          # Continue previous label iff it starts with two spaces; drop them
+          line <- stringr::str_sub(parts[1], 3L)
+        } else if (stringr::str_trim(parts[1]) == "") {
+          line <- ""
         } else {
-          # Continue previous line
-          line <- parts[1]
+          keep_line <- FALSE
         }
 
-        if (!is.null(current_row[1, label])) {
-          current_row[1, label] <-
-            paste0(current_row[1, label], "\n", line)
-        } else {
-          current_row[1, label] <- line
+        if (keep_line) {
+          if (!is.null(current_row[1, label])) {
+            current_row[1, label] <-
+              paste0(current_row[1, label], "\n", line)
+          } else {
+            current_row[1, label] <- line
+          }
         }
       }
     }  # end for line
