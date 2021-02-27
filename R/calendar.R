@@ -222,7 +222,7 @@ daily2cal <-
     # day   = lubridate::wday(date),
     # wday  = lubridate::wday(date, label = TRUE))
   )
-  if (!is.na(end)) {
+  if (length(end) == 1) {
     result <- filter(result, date <= end)
   }
   result
