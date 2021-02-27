@@ -275,10 +275,11 @@ gg_calendar <- function(calendar, show = 1:7, size = 3) {
 #' @param show a numeric vector of days to show (Sunday = 1)
 #' @param items a character vector of items to display (or NULL for all)
 #' @param width width of HTML table used for calendar.
+#' @param past_week weeks less than this get a class ".past"
 #' @return a character string of HTML code for the calendar
 #' @export
 html_calendar <-
-  function(calendar, show = 1:7, items = NULL, width = "95%") {
+  function(calendar, show = 1:7, items = NULL, width = "95%", past_week = NULL) {
     Cal <- calendar %>% filter(wday(date) %in% show)
     Cal <- Cal %>%
       dplyr::group_by(date, week) %>%
@@ -286,7 +287,7 @@ html_calendar <-
       dplyr::ungroup() %>%
       dplyr::arrange(date)
     last_week <- -Inf
-    res <- paste0("<table border=1 width=", width, ">")
+    res <- paste0("<table class=\"daily-calendar\" border=1 width=", width, ">")
 
     res <- c(res, '<colgroup>')
     for (s in show) {
@@ -303,7 +304,8 @@ html_calendar <-
     for (i in 1:nrow(Cal)) {
       if (Cal[i, "week"] > last_week) {
         res <- c(res, paste("<!-- ", Cal[i, "week"], ">", last_week, "-->"))
-        res <- c(res, "</tr><tr>")
+        is_past <- !is.null(past_week) && (Cal[i, "week"] < past_week)
+        res <- c(res, if (is_past) "</tr><tr class=\"past\">" else "</tr><tr>")
         last_week <- Cal[i, "week"]
       }
       res <- c(res, render_day(Cal, i, items))
@@ -326,7 +328,7 @@ render_day <- function(calendar, row, items) {
     dplyr::pull(date) %>%
     lubridate::month()
   res <-
-    glue::glue('<td class = "{parity}">{month}/{day}<br>',
+    glue::glue('<td class = "{parity}"><div>{month}/{day}<br>',
                parity = if(month %% 2 == 0) "even" else "odd",
                month = month,
                day   =
@@ -347,7 +349,7 @@ render_day <- function(calendar, row, items) {
     }
   }
   # res <- c(res, "</td></tr></table>")
-  res <- paste0(res, "<br></td>")
+  res <- paste0(res, "<br></div></td>")
   res
 }
 
