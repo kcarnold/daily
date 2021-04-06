@@ -330,7 +330,7 @@ render_day <- function(calendar, row, items, past_week) {
   week <- calendar %>% dplyr::slice(row) %>% dplyr::pull(week)
   open_flag <- if (week < past_week) "" else " open"
   res <-
-    glue::glue('<td class = "{parity}"><div><details{ open_flag}><summary>{month}/{day}</summary><br>',
+    glue::glue('<td class = "{parity}"><div><details{ open_flag}><summary>{month}/{day}</summary>',
                parity = if(month %% 2 == 0) "even" else "odd",
                month = month,
                day   =
@@ -344,7 +344,7 @@ render_day <- function(calendar, row, items, past_week) {
     if (! is.na(calendar[row, i])) {
       res <-
         paste0(res,
-               glue::glue('<span class = "{item}">{value}</span><br>',
+               glue::glue('<span class = "{item}">{value}</span>',
                           item = i, value = calendar[row, i]
                )
         )
